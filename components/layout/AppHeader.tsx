@@ -19,7 +19,7 @@ export default function AppHeader() {
           </div>
           <div className="flex flex-col">
             <h1 className="text-xl font-bold tracking-tight text-white leading-none">{t('common.siteTitle')}</h1>
-            <p className="text-[10px] font-medium tracking-widest text-cyan-400 uppercase mt-1">{t('common.systemActive')} // 2026</p>
+            <p className="text-[10px] font-medium tracking-widest text-cyan-400 uppercase mt-1">{t('common.systemActive')}</p>
           </div>
         </Link>
 
@@ -29,13 +29,13 @@ export default function AppHeader() {
 
           <div className="h-4 w-px bg-white/10 hidden sm:block"></div>
 
-          <nav className="hidden sm:flex items-center gap-4">
+          <nav className="flex items-center gap-4">
             <Link
               href="/settings"
               className="text-sm font-medium text-zinc-400 hover:text-cyan-400 transition-colors flex items-center gap-2"
             >
               <Settings className="h-4 w-4" />
-              {t('header.settings')}
+              <span className="hidden sm:inline">{t('header.settings')}</span>
             </Link>
           </nav>
 

@@ -85,21 +85,30 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
   const DatePickerTrigger = ({
     value,
     onChange,
-    inputRef
+    inputRef,
+    placeholderDesktop,
+    placeholderMobile
   }: {
     value: string;
     onChange: (val: string) => void;
     inputRef: React.RefObject<HTMLInputElement | null>;
+    placeholderDesktop: string;
+    placeholderMobile: string;
   }) => (
     <div className="relative group w-full">
       {/* Visual Button */}
       <div
-        className="flex items-center gap-3 w-full bg-white/5 border border-white/10 rounded-xl px-4 h-12 text-base cursor-pointer hover:bg-white/10 transition-colors"
+        className="flex items-center gap-2 sm:gap-3 w-full bg-white/5 border border-white/10 rounded-xl px-2 sm:px-4 h-12 text-base cursor-pointer hover:bg-white/10 transition-colors"
         onClick={() => inputRef.current?.showPicker()}
       >
-        <CalendarIcon className="w-5 h-5 text-blue-400 shrink-0" />
+        <CalendarIcon className="hidden md:block w-5 h-5 text-blue-400 shrink-0" />
         <span className={`truncate ${value ? 'text-white' : 'text-slate-500'}`}>
-          {value || t('filters.selectDate')}
+          {value ? value : (
+            <>
+              <span className="hidden sm:inline">{placeholderDesktop}</span>
+              <span className="sm:hidden">{placeholderMobile}</span>
+            </>
+          )}
         </span>
       </div>
 
@@ -172,10 +181,22 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 w-full">
 
         {/* Date Range (Flex Grow) */}
-        <div className="flex items-center gap-2 min-w-0 md:col-span-12 lg:col-span-5">
-          <DatePickerTrigger value={start} onChange={setStart} inputRef={startInputRef} />
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0 md:col-span-12 lg:col-span-5">
+          <DatePickerTrigger
+            value={start}
+            onChange={setStart}
+            inputRef={startInputRef}
+            placeholderDesktop={t('filters.startDate')}
+            placeholderMobile={t('filters.startDateMobile')}
+          />
           <ArrowRight className="w-5 h-5 text-slate-600 shrink-0" />
-          <DatePickerTrigger value={end} onChange={setEnd} inputRef={endInputRef} />
+          <DatePickerTrigger
+            value={end}
+            onChange={setEnd}
+            inputRef={endInputRef}
+            placeholderDesktop={t('filters.endDate')}
+            placeholderMobile={t('filters.endDateMobile')}
+          />
         </div>
 
         {/* Tag Filter (Newly Added) */}

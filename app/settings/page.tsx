@@ -13,20 +13,20 @@ export default function SettingsPage() {
     return (
         <div className="min-h-screen pt-8 pb-20">
             <div className="mx-auto max-w-4xl px-6">
-                <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="mb-8 flex flex-row items-start justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-white">{t('settings.title')}</h1>
                         <p className="mt-2 text-cyan-100">
                             {t('settings.description')}
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         {/* Language Switcher */}
                         <LanguageSwitcher />
 
-                        <Link href="/" className="inline-flex items-center rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/10 hover:text-white border border-white/10">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            {t('common.backToHome')}
+                        <Link href="/" className="inline-flex items-center rounded-lg bg-white/5 px-3 sm:px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/10 hover:text-white border border-white/10 h-10">
+                            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">{t('common.backToHome')}</span>
                         </Link>
                     </div>
                 </div>
