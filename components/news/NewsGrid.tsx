@@ -1,17 +1,21 @@
 import NewsCard from './NewsCard';
+import { NewsItem } from '@/types/database';
 
-type NewsItem = {
-  id: string;
-  title: string;
-  url: string;
-  thumbnail_url: string | null;
-  summary: string | null;
-  published_at: string;
-  engine_type: string | null;
-  importance: number | string | null;
-};
-
-export default function NewsGrid({ items }: { items: NewsItem[] }) {
+export default function NewsGrid({
+  items,
+  tagColors,
+  isSelectionMode = false,
+  selectedIds = [],
+  onToggleSelect,
+  onTagClick
+}: {
+  items: NewsItem[],
+  tagColors?: Record<string, string>,
+  isSelectionMode?: boolean,
+  selectedIds?: string[],
+  onToggleSelect?: (id: string) => void,
+  onTagClick?: (tag: string) => void
+}) {
   if (!items || items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-500">
@@ -21,9 +25,17 @@ export default function NewsGrid({ items }: { items: NewsItem[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {items.map((item) => (
-        <NewsCard key={item.id} item={item} />
+        <NewsCard
+          key={item.id}
+          item={item}
+          tagColor={item.tag && tagColors ? tagColors[item.tag] : undefined}
+          isSelectionMode={isSelectionMode}
+          isSelected={selectedIds.includes(item.id)}
+          onToggleSelect={() => onToggleSelect?.(item.id)}
+          onTagClick={onTagClick}
+        />
       ))}
     </div>
   );
