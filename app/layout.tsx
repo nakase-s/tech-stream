@@ -11,6 +11,10 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Tech Stream',
   description: 'Tech Stream - AI & Tech News Dashboard',
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
