@@ -7,6 +7,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Use Service Role Key for Admin actions (writing to db)
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const youtubeApiKey = process.env.YOUTUBE_API_KEY!;
+const geminiApiKey = process.env.GEMINI_API_KEY!;
 
 if (!supabaseServiceKey) {
     throw new Error('SUPABASE_SERVICE_ROLE_KEY is not defined');
@@ -106,6 +107,137 @@ export async function getChannels(): Promise<{ success: boolean; data?: YouTubeC
         return { success: true, data: data as YouTubeChannel[] };
     } catch (error) {
         console.error('getChannels error:', error);
+        return { success: false, error: 'An unexpected error occurred' };
+    }
+}
+// Helper to extract Video ID from various YouTube URL formats
+function extractVideoId(url: string): string | null {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// Helper: Generate Summary & Importance via Gemini
+async function generateSummaryAndImportance(description: string, title: string): Promise<{ summary: string; importance: number }> {
+    if (!permissionToUseGemini()) return { summary: description, importance: 5 };
+
+    try {
+        const prompt = `
+        Video Title: ${title}
+        Description: ${description}
+
+        Task:
+        1. Summarize the content in Japanese in 3 lines or less.
+        2. Rate the technical importance for an AI/Tech engineer on a scale of 1 to 5 (5 = Critical/High Value, 1 = Low).
+
+        Return strictly JSON format:
+        {
+          "summary": "...",
+          "importance": 3
+        }
+        `;
+
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            }
+        );
+
+        if (!response.ok) {
+            console.error('Gemini API Error:', await response.text());
+            return { summary: description, importance: 5 }; // Fallback
+        }
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (text) {
+            const result = JSON.parse(text);
+            return {
+                summary: result.summary || description.slice(0, 200),
+                importance: Number(result.importance) || 3
+            };
+        }
+    } catch (e) {
+        console.error('Gemini processing failed:', e);
+    }
+
+    return { summary: description, importance: 5 };
+}
+
+function permissionToUseGemini() {
+    return !!geminiApiKey;
+}
+
+export async function fetchVideoDetails(videoUrl: string) {
+    if (!videoUrl) {
+        return { success: false, error: 'URL is required' };
+    }
+
+    const videoId = extractVideoId(videoUrl);
+    if (!videoId) {
+        return { success: false, error: 'Invalid YouTube URL' };
+    }
+
+    try {
+        // 1. Fetch Video Details
+        const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
+        );
+
+        if (!response.ok) {
+            return { success: false, error: 'Failed to fetch video details from YouTube' };
+        }
+
+        const data = await response.json();
+
+        if (!data.items || data.items.length === 0) {
+            return { success: false, error: 'Video not found' };
+        }
+
+        const video = data.items[0];
+        const snippet = video.snippet;
+        const thumbnail = snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url;
+
+        // 1.5 Generate AI Summary & Importance
+        const { summary, importance } = await generateSummaryAndImportance(snippet.description, snippet.title);
+
+        // 2. Insert into News table
+        const { error } = await supabase
+            .from('news')
+            .insert({
+                title: snippet.title,
+                url: `https://www.youtube.com/watch?v=${videoId}`,
+                thumbnail_url: thumbnail,
+                summary: summary,
+                published_at: snippet.publishedAt,
+                importance: importance,
+                tag: 'YouTube',
+                source: 'YouTube',
+                channel_title: snippet.channelTitle,
+                is_saved: false
+            });
+
+        if (error) {
+            console.error('Supabase insert error:', error);
+            // Check for potential duplicates if URL is unique?
+            if (error.code === '23505') {
+                return { success: false, error: 'This video is already in your dashboard.' };
+            }
+            return { success: false, error: `Failed to save to dashboard: ${error.message}` };
+        }
+
+        revalidatePath('/');
+        return { success: true, message: `Added: ${snippet.title}` };
+
+    } catch (error) {
+        console.error('fetchVideoDetails error:', error);
         return { success: false, error: 'An unexpected error occurred' };
     }
 }

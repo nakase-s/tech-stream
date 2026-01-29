@@ -13,13 +13,14 @@ export const locales = {
         },
         news: {
             title: 'ニュース一覧',
-            description: 'キーワード・期間で絞り込み、重要度で並び替えできます。',
+            description: 'キーワード・タグ・期間での絞り込み、重要度での並び替え、YouTube動画の追加が可能です。',
             noSignal: 'NO SIGNAL',
         },
         card: {
             noSignal: 'NO SIGNAL',
             confirmDelete: '本当に削除しますか？\nこの操作は取り消せません。',
             delete: '削除',
+            details: '詳細',
         },
         filters: {
             targetKeyword: 'キーワード',
@@ -36,6 +37,15 @@ export const locales = {
             scan: '検索開始',
             reset: 'リセット',
             allTags: 'すべてのタグ',
+        },
+        tools: {
+            addVideo: '動画を追加',
+            close: '閉じる',
+            pasteUrl: 'YouTube URLを入力...',
+            addCard: 'カードを追加',
+            toggleSaved: '保存済みアイテムを表示',
+            bulkDelete: '一括削除モード',
+            exitSelection: '選択モードを終了',
         },
         settings: {
             title: '設定',
@@ -101,13 +111,14 @@ export const locales = {
         },
         news: {
             title: 'Intel Feed',
-            description: 'Filter by keyword or date, sort by importance.',
+            description: 'Filter by keyword, tag, or date, sort by importance, and add YouTube videos.',
             noSignal: 'NO SIGNAL',
         },
         card: {
             noSignal: 'NO SIGNAL',
             confirmDelete: 'Are you sure you want to delete this item?\nThis action cannot be undone.',
             delete: 'Delete',
+            details: 'Details',
         },
         filters: {
             targetKeyword: 'TARGET KEYWORD',
@@ -124,6 +135,15 @@ export const locales = {
             scan: 'SCAN',
             reset: 'Reset',
             allTags: 'All Tags',
+        },
+        tools: {
+            addVideo: 'Add Video',
+            close: 'Close',
+            pasteUrl: 'Paste YouTube URL...',
+            addCard: 'Add Card',
+            toggleSaved: 'Toggle Saved Items',
+            bulkDelete: 'Bulk Delete Mode',
+            exitSelection: 'Exit Selection Mode',
         },
         settings: {
             title: 'Settings',

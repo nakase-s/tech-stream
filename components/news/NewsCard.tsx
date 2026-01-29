@@ -4,6 +4,15 @@ import { useLocale } from '@/context/LocaleContext';
 import { toggleBookmarkAction } from '@/app/actions/bookmark';
 import { deleteNewsAction } from '@/app/actions/news';
 import { NewsItem } from '@/types/database';
+import Link from 'next/link';
+
+// Helper to extract Video ID from various YouTube URL formats
+function extractVideoId(url: string | null): string {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : '';
+}
 
 export default function NewsCard({
   item,
@@ -75,7 +84,7 @@ export default function NewsCard({
           ? 'bg-red-950/30 border-red-500/80 shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-[0.98]'
           : 'bg-gradient-to-br from-cyan-900/40 via-blue-900/20 to-transparent border-[color:var(--accent-color)]/30 hover:from-cyan-800/60 hover:border-[color:var(--accent-color)] hover:shadow-[0_0_20px_-5px_var(--accent-color)] hover:-translate-y-1'
         }
-        ${isSelectionMode ? 'cursor-pointer backdrop-blur-md border' : 'backdrop-blur-xl border'}
+        ${isSelectionMode ? 'cursor-pointer backdrop-blur-md border-[2px]' : 'backdrop-blur-xl border-[2px]'}
       `}
       style={{ '--accent-color': accentColor } as React.CSSProperties}
       onClick={handleCardClick}
@@ -173,7 +182,12 @@ export default function NewsCard({
             </h3>
           </div>
         ) : (
-          <a href={item.url} target="_blank" rel="noopener noreferrer" className="block mb-2 group/title min-h-[3.5rem]">
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mb-2 group/title min-h-[3.5rem]"
+          >
             <h3 className="text-lg font-bold leading-snug text-slate-100 group-hover/title:text-cyan-400 transition-colors line-clamp-2 break-words hyphens-auto">
               {item.title}
             </h3>
@@ -236,18 +250,30 @@ export default function NewsCard({
           </a>
         )}
 
-        {/* Rating */}
-        <div className="flex gap-0.5 mb-3">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              size={12}
-              className={`transition-colors ${i < starCount
-                ? 'fill-cyan-500 text-cyan-500 animate-[pulse_3s_ease-in-out_infinite]'
-                : 'fill-transparent text-slate-700'
-                }`}
-            />
-          ))}
+        {/* Rating & Details Button */}
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                size={12}
+                className={`transition-colors ${i < starCount
+                  ? 'fill-cyan-500 text-cyan-500 animate-[pulse_3s_ease-in-out_infinite]'
+                  : 'fill-transparent text-slate-700'
+                  }`}
+              />
+            ))}
+          </div>
+
+          {!isSelectionMode && (
+            <Link
+              href={`/report/${extractVideoId(item.url)}`}
+              target="_blank"
+              className="text-[10px] bg-cyan-950/50 hover:bg-cyan-900 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800/50 transition-colors"
+            >
+              {t('card.details')}
+            </Link>
+          )}
         </div>
 
         {/* Summary */}

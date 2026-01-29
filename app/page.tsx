@@ -51,6 +51,9 @@ export default async function Home({ searchParams }: { searchParams: any }) {
     tagColors[k.keyword] = k.color;
   });
 
+  // Explicit overrides
+  tagColors['YouTube'] = '#a1a1aa'; // Zinc-400 (Silver-ish)
+
   // Build the keywords list for the dropdown based on ACTUAL tags in 'news'
   const keywords = uniqueTags.sort().map(tag => ({
     keyword: tag,

@@ -98,8 +98,7 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
     <div className="relative group w-full">
       {/* Visual Button */}
       <div
-        className="flex items-center gap-2 sm:gap-3 w-full bg-white/5 border border-white/10 rounded-xl px-2 sm:px-4 h-12 text-base cursor-pointer hover:bg-white/10 transition-colors"
-        onClick={() => inputRef.current?.showPicker()}
+        className="flex items-center gap-2 sm:gap-3 w-full bg-white/5 border border-cyan-950 group-focus-within:border-cyan-500 rounded-xl px-2 sm:px-4 h-12 text-base pointer-events-none transition-colors"
       >
         <CalendarIcon className="hidden md:block w-5 h-5 text-blue-400 shrink-0" />
         <span className={`truncate ${value ? 'text-white' : 'text-slate-500'}`}>
@@ -118,14 +117,14 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 opacity-0 pointer-events-none"
-        tabIndex={-1}
+        className="absolute inset-0 opacity-0 cursor-pointer z-10"
+        onClick={(e) => e.currentTarget.showPicker()}
       />
     </div>
   );
 
   return (
-    <div className="w-full bg-slate-950/80 border border-white/10 shadow-2xl backdrop-blur-xl p-4 rounded-2xl flex flex-col gap-3">
+    <div className="w-full bg-slate-950/80 border border-cyan-950 shadow-2xl backdrop-blur-xl p-4 rounded-2xl flex flex-col gap-3">
 
       {/* --- Row 1: Keyword Input + Tools --- */}
       <div className="flex items-center gap-2 w-full">
@@ -136,7 +135,7 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
             onChange={e => setTitle(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && onSearch()}
             placeholder={t('filters.searchPlaceholder')}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 h-12 pl-10 text-base text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all"
+            className="w-full bg-white/5 border border-cyan-950 rounded-xl px-4 h-12 pl-10 text-base text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all"
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
         </div>
@@ -145,7 +144,7 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onReset}
-            className="w-10 h-10 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 rounded-xl flex items-center justify-center transition-all active:scale-95 shrink-0"
+            className="w-10 h-10 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-cyan-950 rounded-xl flex items-center justify-center transition-all active:scale-95 shrink-0"
             title={t('filters.reset')}
           >
             <RotateCcw className="w-5 h-5" />
@@ -155,9 +154,9 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
             onClick={onToggleSavedFilter}
             className={`w-10 h-10 border rounded-xl flex items-center justify-center transition-all active:scale-95 shrink-0 ${isSavedFilterType
               ? 'bg-fuchsia-950/50 border-fuchsia-500 text-fuchsia-400 shadow-[0_0_15px_-5px_magenta]'
-              : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+              : 'bg-white/5 border-cyan-950 text-slate-400 hover:text-white hover:bg-white/10'
               }`}
-            title="Toggle Saved Items (Vault)"
+            title={t('tools.toggleSaved')}
           >
             <Archive className="w-5 h-5" />
           </button>
@@ -167,9 +166,9 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
               onClick={onToggleSelectionMode}
               className={`w-10 h-10 border rounded-xl flex items-center justify-center transition-all active:scale-95 shrink-0 ${isSelectionMode
                 ? 'bg-red-500/20 border-red-500 text-red-500 shadow-[0_0_15px_-5px_red]'
-                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                : 'bg-white/5 border-cyan-950 text-slate-400 hover:text-white hover:bg-white/10'
                 }`}
-              title={isSelectionMode ? "Exit Selection Mode" : "Bulk Delete Mode"}
+              title={isSelectionMode ? t('tools.exitSelection') : t('tools.bulkDelete')}
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -209,7 +208,7 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
               triggerSearch({ tag: val });
               e.target.blur();
             }}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 h-12 text-base text-white appearance-none cursor-pointer focus:outline-none focus:border-cyan-500 focus:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-white/10 transition-all pr-8"
+            className="w-full bg-white/5 border border-cyan-950 rounded-xl px-4 h-12 text-base text-white appearance-none cursor-pointer focus:outline-none focus:border-cyan-500 focus:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-white/10 transition-all pr-8"
           >
             <option value="" className="bg-slate-900 text-slate-300">{t('filters.allTags') || "All Tags"}</option>
             {tags.map((t, i) => (
@@ -235,7 +234,7 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
               triggerSearch({ sort: val });
               e.target.blur();
             }}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 h-12 text-base text-white appearance-none cursor-pointer focus:outline-none focus:border-cyan-500 focus:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-white/10 transition-all pr-8"
+            className="w-full bg-white/5 border border-cyan-950 rounded-xl px-4 h-12 text-base text-white appearance-none cursor-pointer focus:outline-none focus:border-cyan-500 focus:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-white/10 transition-all pr-8"
           >
             <option value="" className="bg-slate-900 text-slate-300">{t('filters.latestFirst')}</option>
             <option value="importance" className="bg-slate-900 text-slate-300">{t('filters.highestStars')}</option>
