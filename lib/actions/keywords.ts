@@ -17,10 +17,11 @@ export interface SearchKeyword {
     id: string;
     keyword: string;
     color: string;
+    type: 'include' | 'exclude';
     created_at: string;
 }
 
-export async function addKeyword(keyword: string, color: string = '#3B82F6') {
+export async function addKeyword(keyword: string, color: string = '#3B82F6', type: 'include' | 'exclude' = 'include') {
     if (!keyword || !keyword.trim()) {
         return { success: false, error: 'Keyword is required' };
     }
@@ -31,6 +32,7 @@ export async function addKeyword(keyword: string, color: string = '#3B82F6') {
             .insert({
                 keyword: keyword.trim(),
                 color: color,
+                type: type,
             });
 
         if (error) {

@@ -30,7 +30,7 @@ export default function NewsGrid({
         <NewsCard
           key={item.id}
           item={item}
-          tagColor={item.tag && tagColors ? tagColors[item.tag] : undefined}
+          tagColor={item.tag && tagColors ? tagColors[item.tag.split(',')[0].trim()] : undefined}
           isSelectionMode={isSelectionMode}
           isSelected={selectedIds.includes(item.id)}
           onToggleSelect={() => onToggleSelect?.(item.id)}

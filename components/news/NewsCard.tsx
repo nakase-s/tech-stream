@@ -14,6 +14,20 @@ function extractVideoId(url: string | null): string {
   return (match && match[2].length === 11) ? match[2] : '';
 }
 
+// Helper to format duration
+function formatDuration(seconds: number | null | undefined): string | null {
+  if (!seconds && seconds !== 0) return null;
+
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  if (h > 0) {
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function NewsCard({
   item,
   tagColor,
@@ -43,6 +57,7 @@ export default function NewsCard({
   } catch (e) { /* fallback */ }
 
   const starCount = Number(item.importance) || 0;
+  const durationLabel = formatDuration(item.duration_sec);
 
   // Use DB-provided color or default to Cyber Cyan
   // Special case: 'Subscription' tag uses Gold (Amber-500)
@@ -194,20 +209,26 @@ export default function NewsCard({
           </a>
         )}
 
-        {/* 3. Tag */}
+        {/* 3. Tags */}
         {
           item.tag && (
-            <div className="mb-4">
-              <span
-                className="inline-flex items-center rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all hover:brightness-150"
-                style={tagStyle}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTagClick?.(item.tag!);
-                }}
-              >
-                {item.tag}
-              </span>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {item.tag.split(',').map((tagRaw) => {
+                const tag = tagRaw.trim();
+                return (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all hover:brightness-150"
+                    style={tagStyle}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTagClick?.(tag);
+                    }}
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
             </div>
           )
         }
@@ -225,6 +246,16 @@ export default function NewsCard({
               <div className="w-full h-full flex flex-col items-center justify-center gap-2 opacity-30">
                 <ImageIcon className="w-6 h-6" />
                 <span className="text-[9px] font-bold uppercase tracking-widest">{t('card.noSignal')}</span>
+              </div>
+            )}
+            {durationLabel && (
+              <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1 rounded font-mono pointer-events-none z-10">
+                {durationLabel}
+              </div>
+            )}
+            {item.score !== undefined && item.score !== null && (
+              <div className="absolute bottom-1 left-1 bg-black/80 text-white text-[10px] px-1 rounded font-mono pointer-events-none z-10">
+                Score: {item.score}
               </div>
             )}
           </div>
@@ -245,6 +276,16 @@ export default function NewsCard({
               <div className="w-full h-full flex flex-col items-center justify-center gap-2 opacity-30 group-hover:opacity-50 transition-opacity">
                 <ImageIcon className="w-6 h-6" />
                 <span className="text-[9px] font-bold uppercase tracking-widest">{t('card.noSignal')}</span>
+              </div>
+            )}
+            {durationLabel && (
+              <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1 rounded font-mono pointer-events-none z-10">
+                {durationLabel}
+              </div>
+            )}
+            {item.score !== undefined && item.score !== null && (
+              <div className="absolute bottom-1 left-1 bg-black/80 text-white text-[10px] px-1 rounded font-mono pointer-events-none z-10">
+                Score: {item.score}
               </div>
             )}
           </a>

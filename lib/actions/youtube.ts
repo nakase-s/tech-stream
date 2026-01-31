@@ -175,6 +175,18 @@ function permissionToUseGemini() {
     return !!geminiApiKey;
 }
 
+// Helper to parse ISO 8601 duration to seconds
+function parseDuration(duration: string): number {
+    const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+    if (!match) return 0;
+
+    const hours = (parseInt(match[1]) || 0);
+    const minutes = (parseInt(match[2]) || 0);
+    const seconds = (parseInt(match[3]) || 0);
+
+    return hours * 3600 + minutes * 60 + seconds;
+}
+
 export async function fetchVideoDetails(videoUrl: string) {
     if (!videoUrl) {
         return { success: false, error: 'URL is required' };
@@ -186,9 +198,9 @@ export async function fetchVideoDetails(videoUrl: string) {
     }
 
     try {
-        // 1. Fetch Video Details
+        // 1. Fetch Video Details (snippet + contentDetails + statistics)
         const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeApiKey}`
+            `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoId}&key=${youtubeApiKey}`
         );
 
         if (!response.ok) {
@@ -204,6 +216,18 @@ export async function fetchVideoDetails(videoUrl: string) {
         const video = data.items[0];
         const snippet = video.snippet;
         const thumbnail = snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url;
+
+        // Parse Duration
+        const durationSec = video.contentDetails?.duration ? parseDuration(video.contentDetails.duration) : null;
+
+        // Calculate Score
+        const viewCount = Number(video.statistics?.viewCount) || 0;
+        const publishedAt = new Date(snippet.publishedAt);
+        const now = new Date();
+        let hoursElapsed = (now.getTime() - publishedAt.getTime()) / (1000 * 60 * 60);
+        if (hoursElapsed < 1) hoursElapsed = 1;
+
+        const score = Math.round(viewCount / hoursElapsed);
 
         // 1.5 Generate AI Summary & Importance
         const { summary, importance } = await generateSummaryAndImportance(snippet.description, snippet.title);
@@ -221,7 +245,9 @@ export async function fetchVideoDetails(videoUrl: string) {
                 tag: 'YouTube',
                 source: 'YouTube',
                 channel_title: snippet.channelTitle,
-                is_saved: false
+                is_saved: false,
+                duration_sec: durationSec,
+                score: score
             });
 
         if (error) {

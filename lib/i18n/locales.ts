@@ -76,7 +76,7 @@ export const locales = {
                 title: 'キーワード設定',
                 description: 'ニュース検索に使用するキーワードを管理します。',
                 addNew: 'キーワードを追加',
-                placeholder: '検索キーワードを入力 (例: AI, Python)',
+                placeholder: '追加するキーワードを入力 (例: AI, Python)',
                 add: '追加',
                 monitored: '監視中のキーワード',
                 noKeywords: 'キーワードが登録されていません。',
@@ -87,6 +87,11 @@ export const locales = {
                 errorDelete: 'キーワードの削除に失敗しました。',
                 added: '追加日: ',
                 selectColor: 'タグの色を選択',
+                excludeTitle: '除外キーワード (ノイズフィルタ)',
+                placeholderExclude: '除外するキーワードを入力 (例: spam, PR)',
+                exclude: '除外',
+                excluded: '除外キーワード',
+                noExcludedKeywords: '除外キーワードは登録されていません。',
             }
         },
         purge: {
@@ -174,7 +179,7 @@ export const locales = {
                 title: 'Keyword Settings',
                 description: 'Manage the search keywords used to find news content.',
                 addNew: 'Add New Keyword',
-                placeholder: 'Enter search keyword (e.g. AI, Python)',
+                placeholder: 'Enter keyword to add (e.g. AI, Python)',
                 add: 'Add',
                 monitored: 'Monitored Keywords',
                 noKeywords: 'No keywords registered yet.',
@@ -185,6 +190,11 @@ export const locales = {
                 errorDelete: 'Failed to delete keyword.',
                 added: 'Added: ',
                 selectColor: 'Select tag color',
+                excludeTitle: 'Exclude Keywords (Noise Filter)',
+                placeholderExclude: 'Enter keyword to exclude (e.g. spam, PR)',
+                exclude: 'Exclude',
+                excluded: 'Excluded Keywords',
+                noExcludedKeywords: 'No excluded keywords defined.',
             }
         },
         purge: {

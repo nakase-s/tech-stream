@@ -21,7 +21,7 @@ export default async function Home({ searchParams }: { searchParams: any }) {
 
   // Filters
   if (params.title) query = query.ilike('title', `%${params.title}%`);
-  if (params.tag) query = query.eq('tag', params.tag);
+  if (params.tag) query = query.ilike('tag', `%${params.tag}%`);
   if (params.startDate) query = query.gte('published_at', `${params.startDate}T00:00:00`);
   if (params.endDate) query = query.lte('published_at', `${params.endDate}T23:59:59`);
 
@@ -42,7 +42,15 @@ export default async function Home({ searchParams }: { searchParams: any }) {
   const allTagsRaw = (tagsResult.data ?? []) as { tag: string }[];
 
   // Dedup tags from the actual news data
-  const uniqueTags = Array.from(new Set(allTagsRaw.map(r => r.tag).filter(Boolean)));
+  // Dedup tags from the actual news data (handle comma-separated tags)
+  const uniqueTags = Array.from(new Set(
+    allTagsRaw
+      .map(r => r.tag)
+      .filter(Boolean)
+      .flatMap(tag => tag.split(','))
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0)
+  ));
 
   // Create a map for quick color lookup: { "AI": "#RRGGBB" }
   const tagColors: Record<string, string> = {};

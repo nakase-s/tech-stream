@@ -10,4 +10,6 @@ export type NewsItem = {
     channel_title?: string | null;
     channel_id?: string | null;
     is_saved: boolean;
+    duration_sec?: number | null;
+    score?: number | null;
 };
