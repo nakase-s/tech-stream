@@ -5,6 +5,7 @@ import { toggleBookmarkAction } from '@/app/actions/bookmark';
 import { deleteNewsAction } from '@/app/actions/news';
 import { NewsItem } from '@/types/database';
 import Link from 'next/link';
+import React, { useRef, useState } from 'react';
 
 // Helper to extract Video ID from various YouTube URL formats
 function extractVideoId(url: string | null): string {
@@ -62,6 +63,9 @@ export default function NewsCard({
 
   const starCount = Number(item.importance) || 0;
   const durationLabel = formatDuration(item.duration_sec);
+
+  const [showTooltip, setShowTooltip] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- Tag Grouping Logic ---
   const rawTags = item.tag ? item.tag.split(',').map(t => t.trim()).filter(Boolean) : [];
@@ -348,9 +352,62 @@ export default function NewsCard({
         </div>
 
         {/* Summary */}
-        <p className="mt-auto text-xs leading-relaxed text-slate-400 line-clamp-3 break-words hyphens-auto">
-          {item.summary}
-        </p>
+        {/* Summary with Smart Tooltip */}
+        <div
+          className="mt-auto relative"
+          onMouseEnter={(e) => {
+            const p = e.currentTarget.querySelector('p');
+            if (p) {
+              // Desktop hover logic
+              if (window.matchMedia('(hover: hover)').matches) {
+                setShowTooltip(p.scrollHeight > p.clientHeight);
+              }
+            }
+          }}
+          onMouseLeave={() => setShowTooltip(false)}
+          onTouchStart={(e) => {
+            const p = e.currentTarget.querySelector('p');
+            if (p && p.scrollHeight > p.clientHeight) {
+              timerRef.current = setTimeout(() => {
+                setShowTooltip(true);
+              }, 500); // 500ms long press
+            }
+          }}
+          onTouchEnd={() => {
+            if (timerRef.current) {
+              clearTimeout(timerRef.current);
+              timerRef.current = null;
+            }
+            setShowTooltip(false);
+          }}
+          onTouchMove={() => {
+            // Cancel if scrolling
+            if (timerRef.current) {
+              clearTimeout(timerRef.current);
+              timerRef.current = null;
+            }
+            setShowTooltip(false);
+          }}
+        // Prevent context menu to avoid conflict? User didn't ask, but it's good UX for long press actions usually. 
+        // However, standard text selection might be desired. Let's keep it simple for now.
+        >
+          <p className="text-xs leading-relaxed text-slate-400 line-clamp-3 break-words hyphens-auto select-none sm:select-text">
+            {/* select-none on mobile helps prevent text selection triggering instead of our tooltip? 
+                Actually, 'select-none' helps avoid the browser's selection magnifier/menu interfering. 
+            */}
+            {item.summary}
+          </p>
+
+          {showTooltip && (
+            <div className="absolute bottom-full left-0 w-full mb-2 z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-none">
+              <div className="bg-slate-900/95 border border-cyan-500/30 text-slate-200 text-xs p-3 rounded-xl shadow-[0_0_15px_-3px_rgba(6,182,212,0.15)] backdrop-blur-md">
+                {item.summary}
+              </div>
+              {/* Arrow */}
+              <div className="absolute -bottom-1 left-4 w-2 h-2 bg-slate-900 border-r border-b border-cyan-500/30 rotate-45 transform"></div>
+            </div>
+          )}
+        </div>
 
       </div>
     </article >
