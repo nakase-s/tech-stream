@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { addKeyword, deleteKeyword, updateKeywordColor, SearchKeyword } from '@/lib/actions/keywords';
+import { addKeyword, deleteKeyword, updateKeywordColor, updateKeywordStatus, SearchKeyword } from '@/lib/actions/keywords';
 import { Loader2, Trash2, Plus, Search, Ban } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from '@/context/LocaleContext';
@@ -72,6 +72,12 @@ export default function KeywordManager({
     const handleColorUpdate = (id: string, color: string) => {
         startTransition(async () => {
             await updateKeywordColor(id, color);
+        });
+    };
+
+    const handleStatusToggle = (id: string, currentStatus: boolean) => {
+        startTransition(async () => {
+            await updateKeywordStatus(id, !currentStatus);
         });
     };
 
@@ -147,18 +153,24 @@ export default function KeywordManager({
                                 <div key={kw.id} className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-cyan-500/10">
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={kw.is_active !== false}
+                                                onChange={() => handleStatusToggle(kw.id, kw.is_active !== false)}
+                                                className="h-4 w-4 rounded border-white/20 bg-black/50 text-cyan-600 focus:ring-cyan-500/50"
+                                            />
                                             <div className="relative flex items-center">
                                                 <input
                                                     type="color"
                                                     defaultValue={kw.color || '#3B82F6'}
                                                     onChange={(e) => handleColorUpdate(kw.id, e.target.value)}
-                                                    className="h-6 w-8 cursor-pointer rounded border border-white/20 bg-transparent p-0"
+                                                    className={`h-6 w-8 cursor-pointer rounded border border-white/20 bg-transparent p-0 ${kw.is_active === false ? 'opacity-50' : ''}`}
                                                     title={t('settings.keywords.selectColor')}
                                                 />
                                             </div>
-                                            <span className="font-medium text-white">{kw.keyword}</span>
+                                            <span className={`font-medium text-white ${kw.is_active === false ? 'opacity-50 line-through' : ''}`}>{kw.keyword}</span>
                                         </div>
-                                        <span className="font-mono text-xs text-cyan-200/70">{t('settings.keywords.added')}{new Date(kw.created_at).toLocaleDateString()}</span>
+                                        <span className={`font-mono text-xs text-cyan-200/70 ${kw.is_active === false ? 'opacity-50' : ''}`}>{t('settings.keywords.added')}{new Date(kw.created_at).toLocaleDateString()}</span>
                                     </div>
                                     <button
                                         onClick={() => handleDelete(kw.id)}
@@ -239,10 +251,16 @@ export default function KeywordManager({
                                 <div key={kw.id} className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-red-500/10">
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={kw.is_active !== false}
+                                                onChange={() => handleStatusToggle(kw.id, kw.is_active !== false)}
+                                                className="h-4 w-4 rounded border-white/20 bg-black/50 text-red-600 focus:ring-red-500/50"
+                                            />
                                             {/* No color picker for exclude, just text */}
-                                            <span className="font-medium text-white">{kw.keyword}</span>
+                                            <span className={`font-medium text-white ${kw.is_active === false ? 'opacity-50 line-through' : ''}`}>{kw.keyword}</span>
                                         </div>
-                                        <span className="font-mono text-xs text-red-200/70">{t('settings.keywords.added')}{new Date(kw.created_at).toLocaleDateString()}</span>
+                                        <span className={`font-mono text-xs text-red-200/70 ${kw.is_active === false ? 'opacity-50' : ''}`}>{t('settings.keywords.added')}{new Date(kw.created_at).toLocaleDateString()}</span>
                                     </div>
                                     <button
                                         onClick={() => handleDelete(kw.id)}
