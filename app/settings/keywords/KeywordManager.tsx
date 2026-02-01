@@ -7,7 +7,13 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from '@/context/LocaleContext';
 import CyberCard from '@/components/ui/CyberCard';
 
-export default function KeywordManager({ initialKeywords }: { initialKeywords: SearchKeyword[] }) {
+export default function KeywordManager({
+    initialKeywords,
+    children
+}: {
+    initialKeywords: SearchKeyword[],
+    children?: React.ReactNode
+}) {
     const [keywords, setKeywords] = useState<SearchKeyword[]>(initialKeywords);
     const [newKeyword, setNewKeyword] = useState('');
     const [newColor, setNewColor] = useState('#3B82F6');
@@ -172,6 +178,9 @@ export default function KeywordManager({ initialKeywords }: { initialKeywords: S
                     </div>
                 </CyberCard>
             </div>
+
+            {/* Injected Content (Tag Groups) */}
+            {children}
 
             {/* --- EXCLUDED KEYWORDS SECTION --- */}
             <div className="space-y-8 pt-8 border-t border-white/10">

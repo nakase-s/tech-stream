@@ -14,11 +14,13 @@ import { useLocale } from '@/context/LocaleContext';
 export default function NewsDashboard({
     initialItems,
     tagColors,
-    keywords
+    keywords,
+    keywordToGroupMap
 }: {
     initialItems: NewsItem[];
     tagColors: Record<string, string>;
     keywords?: { keyword: string; color: string }[];
+    keywordToGroupMap?: Record<string, { name: string; color: string }>;
 }) {
     const [displayedItems, setDisplayedItems] = useState(initialItems);
     const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -138,6 +140,7 @@ export default function NewsDashboard({
                 selectedIds={selectedIds}
                 onToggleSelect={toggleSelect}
                 onTagClick={handleTagClick}
+                keywordToGroupMap={keywordToGroupMap}
             />
 
             <PurgeBar

@@ -124,7 +124,7 @@ export default function SearchFilters({ isSelectionMode = false, onToggleSelecti
   );
 
   return (
-    <div className="w-full bg-slate-950/80 border border-cyan-950 shadow-2xl backdrop-blur-xl p-4 rounded-2xl flex flex-col gap-3">
+    <div className="w-full bg-slate-900/80 border border-cyan-950 shadow-2xl backdrop-blur-xl p-4 rounded-2xl flex flex-col gap-3">
 
       {/* --- Row 1: Keyword Input + Tools --- */}
       <div className="flex items-center gap-2 w-full">

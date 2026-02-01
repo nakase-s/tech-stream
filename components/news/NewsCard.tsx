@@ -31,17 +31,21 @@ function formatDuration(seconds: number | null | undefined): string | null {
 export default function NewsCard({
   item,
   tagColor,
+  tagColorsMap,
   isSelectionMode = false,
   isSelected = false,
   onToggleSelect,
   onTagClick,
+  keywordToGroupMap
 }: {
   item: NewsItem,
   tagColor?: string,
+  tagColorsMap?: Record<string, string>,
   isSelectionMode?: boolean,
   isSelected?: boolean,
   onToggleSelect?: () => void,
-  onTagClick?: (tag: string) => void
+  onTagClick?: (tag: string) => void,
+  keywordToGroupMap?: Record<string, { name: string; color: string }>
 }) {
   const { t } = useLocale();
   // Parsing date safely, ensuring valid output
@@ -59,16 +63,37 @@ export default function NewsCard({
   const starCount = Number(item.importance) || 0;
   const durationLabel = formatDuration(item.duration_sec);
 
-  // Use DB-provided color or default to Cyber Cyan
-  // Special case: 'Subscription' tag uses Gold (Amber-500)
-  const accentColor = item.tag === 'Subscription' ? '#f59e0b' : (tagColor || '#06b6d4');
+  // --- Tag Grouping Logic ---
+  const rawTags = item.tag ? item.tag.split(',').map(t => t.trim()).filter(Boolean) : [];
 
-  // Dynamic Tag Style
-  const tagStyle = {
-    backgroundColor: `${accentColor}1A`, // 10% opacity
-    borderColor: `${accentColor}80`,    // 50% opacity for better visibility
-    color: accentColor,
-  };
+  const tagsToDisplay = rawTags.reduce((acc, tag) => {
+    if (keywordToGroupMap && keywordToGroupMap[tag]) {
+      const group = keywordToGroupMap[tag];
+      // Avoid duplicates: if group is already in acc, skip
+      if (!acc.some(t => t.label === group.name)) {
+        acc.push({ label: group.name, color: group.color, isGroup: true });
+      }
+    } else {
+      // Regular tag
+      // Use existing color map or fallback
+      const color = (tagColorsMap && tagColorsMap[tag]) || tagColor || '#06b6d4';
+      if (!acc.some(t => t.label === tag)) {
+        acc.push({ label: tag, color: color, isGroup: false });
+      }
+    }
+    return acc;
+  }, [] as { label: string, color: string, isGroup: boolean }[]);
+
+  // Card outline / accent color: Use the color of the FIRST RAW KEYWORD (User Request).
+  // Do NOT use the group color for the outline, even if the tag is displayed as a group.
+
+  let accentColor = (tagColor || '#06b6d4');
+
+  // Special case: 'Subscription' tag uses Gold (Amber-500)
+  // Check raw tags to see if the first one is 'Subscription'
+  if (rawTags.length > 0 && rawTags[0] === 'Subscription') {
+    accentColor = '#f59e0b';
+  }
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (isSelectionMode && onToggleSelect) {
@@ -97,7 +122,7 @@ export default function NewsCard({
         group relative flex flex-col h-full rounded-2xl overflow-hidden transition-all duration-300
         ${isSelectionMode && isSelected
           ? 'bg-red-950/30 border-red-500/80 shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-[0.98]'
-          : 'bg-gradient-to-br from-cyan-900/40 via-blue-900/20 to-transparent border-[color:var(--accent-color)]/30 hover:from-cyan-800/60 hover:border-[color:var(--accent-color)] hover:shadow-[0_0_20px_-5px_var(--accent-color)] hover:-translate-y-1'
+          : 'bg-gradient-to-br from-cyan-900/60 via-blue-900/40 to-transparent border-[color:var(--accent-color)]/30 hover:from-cyan-800/80 hover:border-[color:var(--accent-color)] hover:shadow-[0_0_20px_-5px_var(--accent-color)] hover:-translate-y-1'
         }
         ${isSelectionMode ? 'cursor-pointer backdrop-blur-md border-[2px]' : 'backdrop-blur-xl border-[2px]'}
       `}
@@ -211,21 +236,26 @@ export default function NewsCard({
 
         {/* 3. Tags */}
         {
-          item.tag && (
+          tagsToDisplay.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-2">
-              {item.tag.split(',').map((tagRaw) => {
-                const tag = tagRaw.trim();
+              {tagsToDisplay.map((tagObj) => {
+                const specificTagColor = tagObj.label === 'Subscription' ? '#f59e0b' : tagObj.color;
+                const specificTagStyle = {
+                  backgroundColor: `${specificTagColor}1A`,
+                  borderColor: `${specificTagColor}80`,
+                  color: specificTagColor,
+                };
                 return (
                   <span
-                    key={tag}
+                    key={tagObj.label}
                     className="inline-flex items-center rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all hover:brightness-150"
-                    style={tagStyle}
+                    style={specificTagStyle}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onTagClick?.(tag);
+                      onTagClick?.(tagObj.label);
                     }}
                   >
-                    {tag}
+                    {tagObj.label}
                   </span>
                 );
               })}
@@ -310,7 +340,7 @@ export default function NewsCard({
             <Link
               href={`/report/${extractVideoId(item.url)}`}
               target="_blank"
-              className="text-[10px] bg-cyan-950/50 hover:bg-cyan-900 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800/50 transition-colors"
+              className="text-xs bg-cyan-950/50 hover:bg-cyan-900 text-cyan-400 px-3 py-1 rounded border border-cyan-800/50 transition-colors"
             >
               {t('card.details')}
             </Link>

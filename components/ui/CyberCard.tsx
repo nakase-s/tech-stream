@@ -22,24 +22,24 @@ export default function CyberCard({
 }: CyberCardProps) {
     const colorStyles = {
         cyan: {
-            border: 'border-cyan-500/40',
-            shadow: 'shadow-[0_0_15px_-3px_rgba(6,182,212,0.15)]',
-            hover: 'hover:border-cyan-400 hover:shadow-[0_0_30px_5px_rgba(6,182,212,0.6)]'
+            border: 'border-cyan-500/30',
+            shadow: 'shadow-[0_0_20px_-5px_rgba(6,182,212,0.15)]',
+            hover: 'hover:border-cyan-500 hover:shadow-[0_0_20px_-5px_rgba(6,182,212,1)] hover:-translate-y-1'
         },
         gold: {
-            border: 'border-amber-400/40',
-            shadow: 'shadow-[0_0_15px_-3px_rgba(251,191,36,0.15)]',
-            hover: 'hover:border-amber-300 hover:shadow-[0_0_30px_5px_rgba(251,191,36,0.6)]'
+            border: 'border-amber-500/30',
+            shadow: 'shadow-[0_0_20px_-5px_rgba(245,158,11,0.15)]',
+            hover: 'hover:border-amber-500 hover:shadow-[0_0_20px_-5px_rgba(245,158,11,1)] hover:-translate-y-1'
         },
         red: {
-            border: 'border-red-500/40',
-            shadow: 'shadow-[0_0_15px_-3px_rgba(239,68,68,0.15)]',
-            hover: 'hover:border-red-400 hover:shadow-[0_0_30px_5px_rgba(239,68,68,0.6)]'
+            border: 'border-red-500/30',
+            shadow: 'shadow-[0_0_20px_-5px_rgba(239,68,68,0.15)]',
+            hover: 'hover:border-red-500 hover:shadow-[0_0_20px_-5px_rgba(239,68,68,1)] hover:-translate-y-1'
         },
         purple: {
-            border: 'border-purple-500/40',
-            shadow: 'shadow-[0_0_15px_-3px_rgba(168,85,247,0.15)]',
-            hover: 'hover:border-purple-400 hover:shadow-[0_0_30px_5px_rgba(168,85,247,0.6)]'
+            border: 'border-purple-500/30',
+            shadow: 'shadow-[0_0_20px_-5px_rgba(168,85,247,0.15)]',
+            hover: 'hover:border-purple-500 hover:shadow-[0_0_20px_-5px_rgba(168,85,247,1)] hover:-translate-y-1'
         }
     };
 
@@ -48,7 +48,7 @@ export default function CyberCard({
     return (
         <div
             className={`
-                relative overflow-hidden rounded-2xl bg-slate-900/60 backdrop-blur-md transition-all duration-300
+                relative overflow-hidden rounded-2xl bg-slate-900/80 backdrop-blur-md transition-all duration-300 border-2
                 ${styles.border} ${styles.shadow}
                 ${hoverEffect ? styles.hover : ''}
                 ${className}

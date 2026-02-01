@@ -7,14 +7,16 @@ export default function NewsGrid({
   isSelectionMode = false,
   selectedIds = [],
   onToggleSelect,
-  onTagClick
+  onTagClick,
+  keywordToGroupMap
 }: {
   items: NewsItem[],
   tagColors?: Record<string, string>,
   isSelectionMode?: boolean,
   selectedIds?: string[],
   onToggleSelect?: (id: string) => void,
-  onTagClick?: (tag: string) => void
+  onTagClick?: (tag: string) => void,
+  keywordToGroupMap?: Record<string, { name: string; color: string }>
 }) {
   if (!items || items.length === 0) {
     return (
@@ -31,10 +33,12 @@ export default function NewsGrid({
           key={item.id}
           item={item}
           tagColor={item.tag && tagColors ? tagColors[item.tag.split(',')[0].trim()] : undefined}
+          tagColorsMap={tagColors}
           isSelectionMode={isSelectionMode}
           isSelected={selectedIds.includes(item.id)}
           onToggleSelect={() => onToggleSelect?.(item.id)}
           onTagClick={onTagClick}
+          keywordToGroupMap={keywordToGroupMap}
         />
       ))}
     </div>

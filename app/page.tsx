@@ -30,18 +30,35 @@ export default async function Home({ searchParams }: { searchParams: any }) {
     query = query.eq('is_saved', true);
   }
 
-  // Parallel fetching of News, Keywords (for colors), and existing Tags
-  const [newsResult, keywordsResult, tagsResult] = await Promise.all([
+  // Parallel fetching of News, Keywords, Tags, and Groups
+  const [newsResult, keywordsResult, tagsResult, groupsResult] = await Promise.all([
     query,
-    supabase.from('search_keywords').select('keyword, color'),
-    supabase.from('news').select('tag').not('tag', 'is', null)
+    supabase.from('search_keywords').select('keyword, color, tag_group_id'),
+    supabase.from('news').select('tag').not('tag', 'is', null),
+    supabase.from('tag_groups').select('id, name, color')
   ]);
 
   const items = (newsResult.data ?? []) as NewsItem[];
-  const registeredKeywords = (keywordsResult.data ?? []) as { keyword: string; color: string }[];
+  const registeredKeywords = (keywordsResult.data ?? []) as { keyword: string; color: string; tag_group_id: string | null }[];
   const allTagsRaw = (tagsResult.data ?? []) as { tag: string }[];
+  const tagGroups = (groupsResult.data ?? []) as { id: string; name: string; color: string }[];
 
-  // Dedup tags from the actual news data
+  // 1. Build Keyword -> Group Map
+  const keywordToGroupMap: Record<string, { name: string; color: string }> = {};
+
+  // Helper map for group lookup by ID
+  const groupMap = new Map(tagGroups.map(g => [g.id, g]));
+
+  registeredKeywords.forEach(k => {
+    if (k.tag_group_id && groupMap.has(k.tag_group_id)) {
+      const group = groupMap.get(k.tag_group_id)!;
+      keywordToGroupMap[k.keyword] = {
+        name: group.name,
+        color: group.color
+      };
+    }
+  });
+
   // Dedup tags from the actual news data (handle comma-separated tags)
   const uniqueTags = Array.from(new Set(
     allTagsRaw
@@ -52,20 +69,37 @@ export default async function Home({ searchParams }: { searchParams: any }) {
       .filter(tag => tag.length > 0)
   ));
 
-  // Create a map for quick color lookup: { "AI": "#RRGGBB" }
+  // Create a map for quick color lookup: { "AI": "#RRGGBB", "Frontend": "#RRGGBB" }
   const tagColors: Record<string, string> = {};
+
+  // Add colors for individual keywords
   registeredKeywords.forEach(k => {
-    // Normalize to handle case sensitivity if needed, but strict match is fine for now
     tagColors[k.keyword] = k.color;
+  });
+
+  // Add colors for groups
+  tagGroups.forEach(g => {
+    tagColors[g.name] = g.color;
   });
 
   // Explicit overrides
   tagColors['YouTube'] = '#a1a1aa'; // Zinc-400 (Silver-ish)
 
-  // Build the keywords list for the dropdown based on ACTUAL tags in 'news'
-  const keywords = uniqueTags.sort().map(tag => ({
+  // Build the detailed keywords list for the dropdown based on ACTUAL tags in 'news'
+  // If a tag belongs to a group, use the GROUP name.
+  const effectiveTagsSet = new Set<string>();
+
+  uniqueTags.forEach(tag => {
+    if (keywordToGroupMap[tag]) {
+      effectiveTagsSet.add(keywordToGroupMap[tag].name);
+    } else {
+      effectiveTagsSet.add(tag);
+    }
+  });
+
+  const keywords = Array.from(effectiveTagsSet).sort().map(tag => ({
     keyword: tag,
-    color: tagColors[tag] || '#94a3b8' // Fallback color (Slate-400) if not in registered keywords
+    color: tagColors[tag] || '#94a3b8' // Fallback color
   }));
 
   return (
@@ -78,7 +112,12 @@ export default async function Home({ searchParams }: { searchParams: any }) {
         <main className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8">
           <NewsHeader />
 
-          <NewsDashboard initialItems={items} tagColors={tagColors} keywords={keywords} />
+          <NewsDashboard
+            initialItems={items}
+            tagColors={tagColors}
+            keywords={keywords}
+            keywordToGroupMap={keywordToGroupMap}
+          />
         </main>
       </div>
     </div>

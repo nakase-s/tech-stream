@@ -19,6 +19,7 @@ export interface SearchKeyword {
     color: string;
     type: 'include' | 'exclude';
     created_at: string;
+    tag_group_id?: string | null;
 }
 
 export async function addKeyword(keyword: string, color: string = '#3B82F6', type: 'include' | 'exclude' = 'include') {
