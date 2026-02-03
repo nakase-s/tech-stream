@@ -267,3 +267,42 @@ export async function fetchVideoDetails(videoUrl: string) {
         return { success: false, error: 'An unexpected error occurred' };
     }
 }
+
+export async function resolveChannelHandle(handle: string) {
+    if (!handle) {
+        return { success: false, error: 'Handle is required' };
+    }
+
+    // Ensure handle starts with '@' if not present, though users usually include it
+    // The API expects just the handle name but documentation says "forHandle" parameter.
+    // Let's assume input might or might not have @.
+    // Actually, testing with API explorer, `forHandle` usually expects the handle string *with* or *without* @ depending on how they implemented it?
+    // Docs say: "The parameter value must be a YouTube handle."
+    // Let's keep it as users types it, but if they forget @, maybe add it? 
+    // Wait, let's try raw input first. If it fails, I'll adjust.
+    // But commonly handles are just the name. 
+    // UPDATE: The parameter is `forHandle`. It's safer to pass exactly what the user inputs, but usually starts with @.
+
+    try {
+        const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${youtubeApiKey}`
+        );
+
+        if (!response.ok) {
+            return { success: false, error: 'Failed to connect to YouTube API' };
+        }
+
+        const data = await response.json();
+
+        if (!data.items || data.items.length === 0) {
+            return { success: false, error: 'NOT_FOUND' };
+        }
+
+        const channelId = data.items[0].id;
+        return { success: true, id: channelId };
+
+    } catch (error) {
+        console.error('resolveChannelHandle error:', error);
+        return { success: false, error: 'An unexpected error occurred' };
+    }
+}

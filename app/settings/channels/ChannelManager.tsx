@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { registerChannel, deleteChannel, YouTubeChannel } from '@/lib/actions/youtube';
-import { Loader2, Trash2, Plus, Youtube } from 'lucide-react';
+import { registerChannel, deleteChannel, resolveChannelHandle, YouTubeChannel } from '@/lib/actions/youtube';
+import { Loader2, Trash2, Plus, Youtube, Search, Copy, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from '@/context/LocaleContext';
 import CyberCard from '@/components/ui/CyberCard';
@@ -12,6 +12,13 @@ export default function ChannelManager({ initialChannels }: { initialChannels: Y
     const [newChannelId, setNewChannelId] = useState('');
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
+
+    // Lookup State
+    const [lookupHandle, setLookupHandle] = useState('');
+    const [lookupResult, setLookupResult] = useState<string | null>(null);
+    const [lookupError, setLookupError] = useState<string | null>(null);
+    const [isLookingUp, setIsLookingUp] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
     const router = useRouter();
     const { t } = useLocale();
 
@@ -48,8 +55,92 @@ export default function ChannelManager({ initialChannels }: { initialChannels: Y
         });
     };
 
+    const handleLookup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!lookupHandle.trim()) return;
+
+        setIsLookingUp(true);
+        setLookupResult(null);
+        setLookupError(null);
+
+        const result = await resolveChannelHandle(lookupHandle);
+        setIsLookingUp(false);
+
+        if (result.success && result.id) {
+            setLookupResult(result.id);
+        } else {
+            if (result.error === 'NOT_FOUND') {
+                setLookupError(t('settings.channels.lookupNotFound'));
+            } else {
+                setLookupError(result.error || t('settings.channels.errorLookup'));
+            }
+        }
+    };
+
+    const copyToClipboard = () => {
+        if (lookupResult) {
+            navigator.clipboard.writeText(lookupResult);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+    };
+
     return (
         <div className="space-y-8">
+            {/* Channel ID Lookup Card */}
+            <CyberCard hoverEffect={false} className="p-6">
+                <h2 className="mb-4 text-lg font-semibold text-white flex items-center gap-2">
+                    <Search className="h-5 w-5 text-cyan-400" />
+                    {t('settings.channels.lookupTitle')}
+                </h2>
+                <div className="text-sm text-slate-400 mb-4">{t('settings.channels.lookupDesc')}</div>
+
+                <form onSubmit={handleLookup} className="flex flex-col gap-4 sm:flex-row">
+                    <input
+                        type="text"
+                        value={lookupHandle}
+                        onChange={(e) => setLookupHandle(e.target.value)}
+                        placeholder={t('settings.channels.lookupPlaceholder')}
+                        className="flex-1 rounded-lg border border-white/20 bg-black/50 px-4 py-2.5 text-sm text-cyan-50 placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                        disabled={isLookingUp}
+                    />
+                    <button
+                        type="submit"
+                        disabled={isLookingUp || !lookupHandle.trim()}
+                        className="inline-flex items-center justify-center rounded-lg bg-cyan-900/50 border border-cyan-500/30 px-6 py-2.5 text-sm font-medium text-cyan-200 hover:bg-cyan-800/50 hover:text-white hover:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                        {isLookingUp ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Search className="mr-2 h-4 w-4" />
+                        )}
+                        {t('settings.channels.lookupButton')}
+                    </button>
+                </form>
+
+                {lookupError && (
+                    <div className="mt-3 text-sm text-red-400">
+                        {lookupError}
+                    </div>
+                )}
+
+                {lookupResult && (
+                    <div className="mt-4 flex items-center gap-3 rounded-lg border border-cyan-500/20 bg-cyan-950/30 px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex-1 text-sm text-cyan-200 break-all">
+                            <span className="opacity-70 mr-2 select-none">{t('settings.channels.lookupResult')}</span>
+                            <span className="font-mono font-medium text-white">{lookupResult}</span>
+                        </div>
+                        <button
+                            onClick={copyToClipboard}
+                            className="flex-shrink-0 rounded p-2 text-cyan-400 hover:bg-cyan-900/50 hover:text-cyan-300 transition-colors"
+                            title="Copy ID"
+                        >
+                            {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </button>
+                    </div>
+                )}
+            </CyberCard>
+
             {/* Add New Channel Card */}
             <CyberCard hoverEffect={false} className="p-6">
                 <h2 className="mb-4 text-lg font-semibold text-white flex items-center gap-2">
